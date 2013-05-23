@@ -7,16 +7,19 @@
 
 #import "LoremIpsum.h"
 
+
+static NSArray *LoremIpsumWords=nil;
+
 @implementation LoremIpsum
 {
-    NSArray* _words;
 }
 
-- (id) init
++(void)initWords
 {
-    if ((self = [super init]))
-    {
-        _words = @[@"lorem",
+    static dispatch_once_t onceToken;
+    
+    dispatch_once(&onceToken, ^{
+        LoremIpsumWords = [@[@"lorem",
                    @"ipsum",
                    @"dolor",
                    @"sit",
@@ -1015,22 +1018,23 @@
                    @"morbi",
                    @"vulputate",
                    @"vestibulum",
-                   @"elit"];
-    }
-    return self;
+                   @"elit"] retain];
+    });
 }
 
 #pragma mark -
 
-- (NSString*) randomWord
++(NSString*) randomWord
 {
-    int randomIndex = random() % [_words count];
-    return [_words objectAtIndex:randomIndex];
+    [self initWords];
+    
+    int randomIndex = arc4random() % LoremIpsumWords.count;
+    return [LoremIpsumWords objectAtIndex:randomIndex];
 }
 
 #pragma mark -
 
-- (NSString*) words:(NSUInteger)count
++(NSString*)words:(NSUInteger)count
 {
     if (count==0) return @"";
     
@@ -1049,12 +1053,12 @@
     return words;
 }
 
-- (NSString*) sentences:(NSUInteger)count
++(NSString*) sentences:(NSUInteger)count
 {
     NSMutableString *result = [NSMutableString string];
     for (NSUInteger i = 0; i < count; i++)
     {
-        long numberOfWords = random() % 10 + 10; //range from 10-20 words
+        long numberOfWords = arc4random() % 10 + 10; //range from 10-20 words
         NSMutableString *sentence = [[self words:numberOfWords] mutableCopy];
         NSString *firstChar = [sentence substringWithRange:NSMakeRange(0, 1)];
         firstChar = [firstChar uppercaseString];
